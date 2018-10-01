@@ -5,7 +5,6 @@
   <meta charset="utf-8">
   <title>John Snow's Cholera Epidemic Viz </title>
   <!--<script src="http://d3js.org/d3.v4.min.js"></script>-->
-  <script src="https://fastcdn.org/D3.js/3.5.6/d3.min.js"></script>
   <script type="text/javascript" src="../d3/d3.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600|Cormorant+Garamond:300,300i,500,500i|Montserrat:700" rel="stylesheet">
 	
@@ -45,7 +44,7 @@ path {
   fill: steelblue;
 }
 .bar2 {
-  fill: orange;
+  fill: #c51b7d;
 }
 .x.axis path {
   
@@ -86,8 +85,8 @@ div.tooltip {
 
 <body>
 			<section class="section text-center light-bg">
-					<h1 class="h1 font-family:verdana medium-weight em">
-						London's 1854 Cholera Epidemic Visualization</h1>
+					<h1 class="h2 font-family:verdana medium-weight em">
+						Visualization of London's 1854 Cholera Outbreak</h1>
 			</section>
 
 
@@ -96,35 +95,39 @@ div.tooltip {
 <div id="option">
     <input name="GenderButton" 
            type="button" 
-           value="Show by gender" 
-           onclick="updateGender()" />
+           value="By Gender" 
+           onclick="myFunctionGender()"
+		   class = "button-bg"/>
 
       <input name="AgeButton" 
            type="button" 
-           value="Show by age" 
-           onclick="updateAge()" />
+           value="By Age" 
+           onclick="myFunctionAge()" 
+		   class = "button-bg"/>
 		   
 	<input name="Documentation" 
            type="button" 
            value="Documentation" 
-           onclick="updateAge()" />
+           onclick="window.open('../docs/Documentation.html');"
+		   class = "button-Doc"/>
 		   
 	<input name="Video" 
            type="button" 
            value="Video" 
-           onclick="updateAge()" />
+           onclick="window.open('https://www.youtube.com/watch?v=Is4hAr7-vNk');"
+		   class = "button-Vid"/>
 		   
 </div>
 
-<div id="zoom">
-	<button id="zoom_in">+</button>
-	<button id="zoom_out">-</button>
-</div>
 
 
+<!--<div id="zoom">
+	<button id="zoom_in" class = "button-bg">+</button>
+	<button id="zoom_out" class = "button-bg">-</button>
+</div>-->
 
   
-  <script type="text/javascript">
+<script type="text/javascript">
 
     var width  = 550;
     var height = 580;
@@ -137,12 +140,9 @@ div.tooltip {
     .attr("class", "tooltip")       
     .style("opacity", 0);
 
- 
-
-
-    var zoom = d3.behavior.zoom()
+    /*var zoom = d3.behavior.zoom()
     .scaleExtent([1, 10])
-    .on("zoom", zoomed);
+    .on("zoom", zoomed);*/
 
 	var drag = d3.behavior.drag()
     .origin(function(d) { return d; })
@@ -157,6 +157,10 @@ div.tooltip {
 var margin1 = {top: 80, right: 80, bottom: 80, left: 80},
     w2 = 450 - margin1.left - margin1.right,
     h2 = 400 - margin1.top - margin1.bottom;
+	
+var margin2 = {top: 80, right: 20, bottom: 80, left: 50},
+    w3 = 450 - margin1.left - margin1.right,
+    h3 = 400 - margin1.top - margin1.bottom;
 
 var zoom = d3.behavior.zoom().scaleExtent([1, 10]).on("zoom", zoomed);
 
@@ -176,8 +180,8 @@ var zoom = d3.behavior.zoom().scaleExtent([1, 10]).on("zoom", zoomed);
  
 
 // Parse the date / time
-var	parseDate = d3.time.format("%d-%b").parse;
-var formatTime = d3.time.format("%e %B");
+var	parseDateFunction = d3.time.format("%d-%b").parse;
+var formatTimeFunction = d3.time.format("%e %B");
 
 // Set the ranges
 var	x = d3.time.scale().range([0, w1]);
@@ -191,17 +195,22 @@ var	yAxis = d3.svg.axis().scale(y)
 	.orient("left").ticks(5);
 
 // Define the line
-var	valueline = d3.svg.line()
+var	linechartvalue = d3.svg.line()
 	.x(function(d) { return x(d.date); })
-	.y(function(d) { return y(d.death); });
+	.y(function(d) { return y(d.deaths); });
     
 // Adding the svg canvas
 var	chart1 = d3.select("body")
 	.append("svg")
-		.attr("width", w1 + margin.left - margin.right+200)
+		.attr("width", w1 + margin.left - margin.right+300)
 		.attr("height", 2.125*h1 + margin.top + margin.bottom)
 	.append("g")
-		.attr("transform", "translate(185,10)");
+		.attr("transform", "translate(320,60)");
+		
+		
+//to draw gender pie and update gender on map
+function myFunctionGender(){ updateGender(); }//updateGenderPie();}
+function myFunctionAge(){ updateAge(); }//updateAgePie();}
 
 
 var x1 = d3.scale.ordinal()
@@ -216,18 +225,6 @@ var yAxisLeft = d3.svg.axis().scale(y0).ticks(4).orient("left");
 // create right yAxis
 var yAxisRight = d3.svg.axis().scale(y1).ticks(4).orient("right");
 
-var chart2 = d3.select("body").append("svg")
-    .attr("width", w2+ margin1.left + margin1.right)
-    .attr("height", 2*h2 + margin1.top + margin1.bottom)
-  .append("g")
-    .attr("class", "graph")
-    .attr("transform", "translate(" + margin1.left + "," + margin1.top + ")");
-
-
-
-
-
-	d3.select("body").append("p").text("");
 
 var container = svgContainer.append("g");
 
@@ -312,119 +309,39 @@ d3.selectAll('button').on('click', zoomClick);
 
 
 
- /*//Draw the map
-    d3.csv("streets.txt", function(data) {
-                
-                //var datasets=dataset.split(" ");
-    	//console.log(typeof(data[1].xy));
-                
-
-		for (i=0; i<data.length; i++){
-          
-			var dataset=data[i].xy.split(/\s+/);
-                     
-                    
-			function isInteger(obj) {
-				return obj%1 === 0
-			}
-
-			if(isInteger(dataset[0]))
-			{
-                      
-
-				var sdata = Array.apply(1,{length: dataset[1]}).map(function(item,j=1){
-				j++;
-				//if (data[i+j].xy.split(/\s+/)[0]>20){console.log(data[i+j].xy.split(/\s+/)[0]);}
-
-				return {x: data[i+j].xy.split(/\s+/)[0]*30, y: data[i+j].xy.split(/\s+/)[1]*30}
-			});
-
-                         //console.log(sdata);
-
-			var lineFunction=d3.svg.line()
-				.x(function(d) { return d.x; })
-				.y(function(d) { return height - d.y; })
-				.interpolate("linear");
-
-
-			lineFunction(sdata);
-
-			var svgPath = svgContainer
-				.append("path")
-				.attr("stroke", "black")
-				.attr("stroke-width", "2px")
-				.attr("fill", "none");
-
-				
-
-			svgPath.attr("d", lineFunction(sdata));
-                      
-			}
-
-   		}
-        console.log(dataset);        
-
-	});*/
-	
-
+//Draw the map
 	d3.json("streets.json", function(error, topo) 
 	{
 				topo.forEach(function(data) {
-					// var g = svgContainer.append("g");
-					// var g = svgContainer.append("g").attr("transform", "translate(" + 0 + "," + 0 + ")rotate(180)");
-					// //var svg = d3.select("div").append("svg").attr("width", 400).attr("height", 400);
-					// var path = g.append("path");
-					// var svgPath = svgContainer
-					// .append("path")
-					// .attr("stroke", "black")
-					// .attr("stroke-width", "2px")
-					// .attr("fill", "none");
-
+					
 				var lineFunction = d3.svg.line()
 				.x(function(d) { return d.x*30; })
 				.y(function(d) { return  height- d.y*30; })
 				.interpolate("linear");
+				
 
 			lineFunction(data);
-			
+			var mapcolor = d3.scale.ordinal().range(["red","blue","green"]);
 			var svgPath = svgContainer
 				.append("path")
-				.attr("stroke", "black")
+				.data(data)
+				.attr("stroke", "#cdcdcd")
 				.attr("stroke-width", "2px")
-				.attr("fill", "none");
-			
+				.attr("fill", "none")
+				//.style("fill",function(d,i){ return mapcolor(i); });
+								
 				svgPath.attr("d", lineFunction(data));
 					//path.attr("d", lineFunction(data));
 				});
-			});
+				
+	});
 
 
 
 //Draw pumps
 	d3.csv("pumps.csv", function(error,data) {
                 
-                //var datasets=dataset.split(" ");
-    	//console.log(typeof(data[1].xy));
                 
-                     
-     
-
-				/*var sdata = Array.apply(1,{length: 13}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].xy.split(/\s+/)[0]*30, y: data[j-1].xy.split(/\s+/)[1]*30}
-			});*/
-
-                         //console.log(sdata);
-
-			/*svgContainer.selectAll("circle")
-  				.data(sdata)
-  				.enter().append("circle")
-   				.attr("cx", function(d) { return d.x; })
-    			.attr("cy", function(d) { return height-d.y; })
-    			.attr("r", 8)
-   				.style("fill", "blue") */ 
-
    			svgContainer.selectAll("rect")
   				.data(data)
   				.enter().append("rect")
@@ -447,7 +364,7 @@ d3.selectAll('button').on('click', zoomClick);
           .attr("height", function(d) { return d.h; })
           .attr("stroke", 'grey')
           .attr("stroke-opacity",0.8)
-          .style("fill", "#b8e186"); 
+          .style("fill", "#969696"); 
 
           var bre = svgContainer.append("rect")
           .data(brewery)
@@ -457,9 +374,10 @@ d3.selectAll('button').on('click', zoomClick);
           .attr("y", function(d) { return d.y; })
           .attr("width", function(d) { return d.w; })
           .attr("height", function(d) { return d.h; })
-          .style("fill", "#b2abd2");       
+          //.style("fill", "#ff8080");
+		  .style("fill", "#969696");
 
-//name of streets
+//adding street names on the map
         svgContainer.selectAll(".place-label")
           .data(street_name)
           .enter().append("text")
@@ -473,28 +391,11 @@ d3.selectAll('button').on('click', zoomClick);
     //.text("ddddddddd");
            .text(function(d) { return d.name; });
 
-
-        
-
-   	
-                
-
 	});
 
 	//Add deaths
 	d3.csv("deaths_age_sex.csv", function(data) {
                          
-                     
-     
-
-				/*var sdata = Array.apply(1,{length: data.length}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-			});
-
-                         console.log(sdata);*/
-
             var color = d3.scale.category20b();
 
 			svgContainer.selectAll("circle")
@@ -503,267 +404,34 @@ d3.selectAll('button').on('click', zoomClick);
   				.enter().append("circle")
    				.attr("cx", function(d) { return d.x*30; })
     			.attr("cy", function(d) { return height-d.y*30; })
-    			.attr("r", 3.5)
-   				.style("fill", "grey")
-          .attr("stroke", 'black')
+    			.attr("r", 3)
+   				.style("fill", "red")
+          .attr("stroke", 'red')
           .attr("stroke-width",1.5);
    	});
 
 
-
-
-
-
-
-
-//Draw bar chart
-
-
-   	d3.csv("deaths.age.mf.txt", function(data) {
-                         
-                     
-     
-
-				var sdata = Array.apply(1,{length: data.length}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-			});
-
-
-   			var age0m=0; var age0f=0; var age11f=0; var age11m=0; 
-   			var age21f=0; var age21m=0; var age41f=0; var age41m=0; 
-   			var age61f=0; var age61m=0; var age81f=0; var age81m=0;
-
-   			for (b=0;b<sdata.length;b++)
-   			{
-   				//console.log(typeof(sdata[b].age));
-   				var s=Number(sdata[b].age);
-   				switch(s)
-   				{
-
-   					case 0:
-   				
-
-   						if(sdata[b].mf==0)
-   						{
-   							age0m+=1;
-   						}else{
-   							age0f+=1;
-   						}
-
-   						break;
-
-   					case 1:
-
-   						if(sdata[b].mf==0)
-   						{
-   							age11m+=1;
-   						}else{
-   							age11f+=1;
-   						}
-
-   						break;
-
-   					case 2:
-   						if(sdata[b].mf==0)
-   						{
-   							age21m+=1;
-   						}else{
-   							age21f+=1;
-   						}
-
-   						break;
-
-   					case 3:
-   						if(sdata[b].mf==0)
-   						{
-   							age41m+=1;
-   						}else{
-   							age41f+=1;
-   						}
-
-   						break;
-
-   					case 4:
-   						if(sdata[b].mf==0)
-   						{
-   							age61m+=1;
-   						}else{
-   							age61f+=1;
-   						}
-
-   						break;
-
-   					case 5:
-   						if(sdata[b].mf==0)
-   						{
-   							age81m+=1;
-   						}else{
-   							age81f+=1;
-   						}
-
-   						break;
-
-   					default:
-   					    console.log("error");
-   				}
-
-   			}
-
-   	var overall = [{age: 5, male: age0m, female: age0f,age1:0,age2:10},{age: 15, male: age11m, female: age11f,age1:11,age2:20},
-   					{age: 30, male: age21m, female: age21f,age1:21,age2:40},{age: 50, male: age41m, female: age41f,age1:41,age2:60},
-   					{age: 70, male: age61m, female: age61f,age1:61,age2:80},{age: 85, male: age81m, female: age81f,age1:80,age2:"∞"}]
-
-    console.log(overall);
-
-x1.domain(overall.map(function(d) { return d.age1+ "-"+ d.age2; }));
-  y0.domain([0, d3.max(overall, function(d) { 
-  	if(d.male>d.female)
-  	{return d.male;}else{return d.female;} })]);
-
-  y1.domain([0, d3.max(overall, function(d) { 
-  	if(d.male>d.female)
-  	{return d.male;}else{return d.female;} })]);
-  
-  chart2.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + h2 + ")")
-      .call(xAxis1)
-      .append("text")
-    .attr("x", 6)
-    .attr("dx", "38em")
-    .style("text-anchor", "begin")
-    .text("Age");
-
-  chart2.append("g")
-    .attr("class", "y axis axisLeft")
-    .attr("transform", "translate(0,0)")
-    .call(yAxisLeft)
-  .append("text")
-  .attr("x", 10)
-    .attr("y", 15)
-    .attr("dy", "-2em")
-    .style("text-anchor", "end")
-    .text("Deaths");
-  
- /* chart2.append("g")
-    .attr("class", "y axis axisRight")
-    .attr("transform", "translate(" + (w2) + ",0)")
-    .call(yAxisRight)
-  .append("text")
-    .attr("y", 6)
-    .attr("dy", "-2em")
-    .attr("dx", "2em")
-    .style("text-anchor", "end")
-    .text("#");*/
-  bars = chart2.selectAll(".bar").data(overall).enter();
-
-  bars.append("rect")
-      .attr("class", "bar1")
-      .attr("x", function(d) { return x1(d.age); })
-      .attr("width", x1.rangeBand()/2)
-      .attr("y", function(d) { return y0(d.male); })
-    .attr("height", function(d,i,j) { return h2 - y0(d.male); }); 
-
-  bars.append("rect")
-      .attr("class", "bar2")
-      .attr("x", function(d) { return x1(d.age) + x1.rangeBand()/2; })
-      .attr("width", x1.rangeBand() / 2)
-      .attr("y", function(d) { return y1(d.female); })
-    .attr("height", function(d,i,j) { return h2 - y1(d.female); }); 
-
-    var illustrator1 = [{name:"Distribution of Deaths by Sex and Age Overall",x:30,y:275}]
-
-    chart2.append("g").selectAll(".place-label")
-          .data(illustrator1)
-          .enter().append("text")
-          .attr("class", "place-label")
-          .attr("x", function(d) { return d.x; })
-          .attr("y", function(d) { return d.y; })
-       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
-           .attr("dy", ".35em")
-    //.text("ddddddddd");
-           .text(function(d) { return d.name; });
-
-  
-
-
-   chart2.selectAll("text.bar")
-  .data(overall)
-.enter().append("text")
-			   .text(function(d) {
-			   		return d.female;
-			   })
-			   .attr("text-anchor", "middle")
-			   .attr("x", function(d, i) {
-			   		return x1(d.age) + x1.rangeBand()/1.35;
-			   		//return i * (w2 / overall.length) + (w2 / overall.length - 1) / 2;
-			   })
-			   .attr("y", function(d) {
-			   		//return h2 - (d * 4) + 14;
-			   		return y1(d.female)-2;
-			   })
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "11px")
-			   .attr("fill", "gray");
-
-			 chart2.selectAll("text.bar")
-  				.data(overall)
-				.enter().append("text")
-			   .text(function(d) {
-			   		return d.male;
-			   })
-			   .attr("text-anchor", "middle")
-			   .attr("x", function(d, i) {
-			   		return x1(d.age) + x1.rangeBand()/4;
-			   		//return i * (w2 / overall.length) + (w2 / overall.length - 1) / 2;
-			   })
-			   .attr("y", function(d) {
-			   		//return h2 - (d * 4) + 14;
-			   		return y0(d.male)-2;
-			   })
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "11px")
-			   .attr("fill", "gray");
-
-});
-
-
+	
 function type(d) {
   d.male = +d.female;
   return d;
 }
 
 
-
-
-	function updateAge(){
+function updateAge(){
 		d3.selectAll("circle").remove();
-			d3.csv("deaths.age.mf.txt", function(data) {
+			d3.csv("deaths_age_sex.csv", function(data) {
                          
-                     
-     
-
-				var sdata = Array.apply(1,{length: data.length}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-			});
-
-                         //console.log(sdata);
-
-            //var color = d3.scale.category20b();
-            //var color = ['#edf8fb', '#ccece6', '#99d8c9', '#66c2a4', '#2ca25f', '#006d2c']
-            var color = ['#b2182b', '#ef8a62', '#fddbc7', '#d1e5f0', '#67a9cf', '#2166ac']
+                
+            var color = ['#762a83', '#af8dc3', '#e7d4e8', '#d9f0d3', '#7fbf7b', '#1b7837']
 			svgContainer.selectAll("circle")
-  				.data(sdata)
+  				.data(data)
   				.enter().append("circle")
-   				.attr("cx", function(d) { return d.x; })
-    			.attr("cy", function(d) { return height-d.y; })
-    			.attr("r", 3.5)
+   				.attr("cx", function(d) { return d.x*30; })
+    			.attr("cy", function(d) { return height-d.y*30; })
+    			.attr("r", 4)
    				.style("fill", function(d) { return color[d.age]; })
-   				.attr("stroke", 'black')
+   				//.attr("stroke", 'black')
           .attr("stroke-opacity",1);
    		});
 
@@ -771,413 +439,40 @@ function type(d) {
 
 	function updateGender(){
 			d3.selectAll("circle").remove();
-			d3.csv("deaths.age.mf.txt", function(data) {
+			d3.csv("deaths_age_sex.csv", function(data) {
                          
-                     
-     
-
-				var sdata = Array.apply(1,{length: data.length}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-			});
-
-                       
-
-            //var color = d3.scale.category20b();
-            var color = ["steelblue","orange"]
+                
+            var color = ["steelblue","#c51b7d"]
 
 			svgContainer.selectAll("circle")
-  				.data(sdata)
+  				.data(data)
   				.enter().append("circle")
-   				.attr("cx", function(d) { return d.x; })
-    			.attr("cy", function(d) { return height-d.y; })
-    			.attr("r", 3.5)
-   				.style("fill", function(d) { return color[d.mf]; })
-   				.attr("stroke", "black")
+   				.attr("cx", function(d) { return d.x*30; })
+    			.attr("cy", function(d) { return height-d.y*30; })
+    			.attr("r", 4)
+   				.style("fill", function(d) { return color[d.gender]; })
+   				//.attr("stroke", "black")
    				.attr("stroke-width", "1px")
    		});
 
 	}
 
 
+//Draw timeline chart
 
-
-
-	//Draw timeline
-
-	d3.csv("deathdays.txt",function(data){
-
-	
-                var sdata = Array.apply(1,{length: data.length}).map(function(item,j=1){
-				j++;
-
-				return {date: data[j-1].xy.split(/\s+/)[0], death: data[j-1].xy.split(/\s+/)[1]}
-			});
-
-
-
-              
-
-             sdata.forEach(function(d) {
-				d.date = parseDate(d.date);
-				d.death = +d.death;
+	d3.csv("deathdays.csv",function(data){
+				data.forEach(function(d) {
+				d.date = parseDateFunction(d.date);
+				d.deaths = +d.deaths;
 				});
-
-
-
 			//console.log(sdata);
 
              
 
 	// Scale the range of the data
-	x.domain(d3.extent(sdata, function(d) { return d.date; }));
-	y.domain([0, d3.max(sdata, function(d) { return d.death; })]);
-
-	// Add the valueline path.
-	chart1.append("path")
-		.attr("class", "line")
-		.attr("d", valueline(sdata))
-		.attr("stroke", "grey")
-   		.attr("stroke-width", "2px");
-
-  chart1.selectAll("dot")  
-        .data(sdata)     
-    .enter().append("ellipse")                 
-        .attr("cx", function(d) { return x(d.date); })     
-        .attr("cy", function(d) { return y(d.death); })
-        .attr("rx", 3.5) 
-        .attr("ry", 3.5)
-        .style("fill", "white") 
-        .attr("stroke", 'red')
-         
-        /*.on("mouseover", function(d) {    
-            div.transition()    
-                .duration(200)    
-                .style("opacity", .9);    
-            div .html(formatTime(d.date) + "<br/>"  + d.death)  
-                .style("left", (d3.event.pageX) + "px")   
-                .style("top", (d3.event.pageY - 28) + "px");  
-            })  */        
-        .on("mouseout", function(d) {   
-            div.transition()    
-                .duration(500)    
-                .style("opacity", 0);
-            })
-        .on("click",function(d, i){
-
-        	chart2.selectAll().remove();
-        	chart2.selectAll("g").remove();
-
-   			chart2.selectAll(".bar").remove();
-   			 chart2.selectAll("rect").remove();
-   			chart2.selectAll("text.bar").remove();
-   			chart2.selectAll("text").remove();
-
-
-
-   			var l=0;
-
-              for (a=0; a<=i; a++){
-
-                 l= l+ sdata[a].death;
-
-
-
-          }
-   				
-		
-		d3.csv("deaths.age.mf.txt", function(data) {
-                      
-                var sdata = Array.apply(1,{length: l}).map(function(item,j=1){
-				j++;
-
-				return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-			});
-
-                         console.log(sdata);
-
-            var color = d3.scale.category20b();
-
-			svgContainer.selectAll("circle")
-				.attr("id","death1")
-  				.data(sdata)
-  				.enter().append("circle")
-   				.attr("cx", function(d) { return d.x; })
-    			.attr("cy", function(d) { return height-d.y; })
-    			.attr("r", 5)
-   				.style("fill", "gray");
-
-
-   			var age0m=0; var age0f=0; var age11f=0; var age11m=0; 
-   			var age21f=0; var age21m=0; var age41f=0; var age41m=0; 
-   			var age61f=0; var age61m=0; var age81f=0; var age81m=0;
-
-   			for (b=0;b<sdata.length;b++)
-   			{
-   				//console.log(typeof(sdata[b].age));
-   				var s=Number(sdata[b].age);
-   				switch(s)
-   				{
-
-   					case 0:
-   				
-
-   						if(sdata[b].mf==0)
-   						{
-   							age0m+=1;
-   						}else{
-   							age0f+=1;
-   						}
-
-   						break;
-
-   					case 1:
-
-   						if(sdata[b].mf==0)
-   						{
-   							age11m+=1;
-   						}else{
-   							age11f+=1;
-   						}
-
-   						break;
-
-   					case 2:
-   						if(sdata[b].mf==0)
-   						{
-   							age21m+=1;
-   						}else{
-   							age21f+=1;
-   						}
-
-   						break;
-
-   					case 3:
-   						if(sdata[b].mf==0)
-   						{
-   							age41m+=1;
-   						}else{
-   							age41f+=1;
-   						}
-
-   						break;
-
-   					case 4:
-   						if(sdata[b].mf==0)
-   						{
-   							age61m+=1;
-   						}else{
-   							age61f+=1;
-   						}
-
-   						break;
-
-   					case 5:
-   						if(sdata[b].mf==0)
-   						{
-   							age81m+=1;
-   						}else{
-   							age81f+=1;
-   						}
-
-   						break;
-
-   					default:
-   					    console.log("errorrrr");
-   				}
-
-   			}
-
-   	var overall = [{age: 5, male: age0m, female: age0f,age1:0,age2:10},{age: 15, male: age11m, female: age11f,age1:11,age2:20},
-   					{age: 30, male: age21m, female: age21f,age1:21,age2:40},{age: 50, male: age41m, female: age41f,age1:41,age2:60},
-   					{age: 70, male: age61m, female: age61f,age1:61,age2:80},{age: 85, male: age81m, female: age81f,age1:80,age2:"∞"}]
-
-    console.log(overall);
-
-x1.domain(overall.map(function(d) { return d.age1+ "-"+ d.age2; }));
-
-  y0.domain([0, d3.max(overall, function(d) { 
-  	if(d.male>d.female)
-  	{return d.male;}else{return d.female;} })]);
-
-  y1.domain([0, d3.max(overall, function(d) { 
-  	if(d.male>d.female)
-  	{return d.male;}else{return d.female;} })]);
-
-  //y1.domain([0, d3.max(overall, function(d) { return d.male; })]);
-
-  chart2.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + h2 + ")")
-      .call(xAxis1)
-      .append("text")
-    .attr("x", 6)
-    .attr("dx", "38em")
-    .style("text-anchor", "begin")
-    .text("Age");
-
-  var illustrator1 = [{name:"Distribution of Deaths by Sex and Age Overall",x:50,y:275}]
-
-    chart2.append("g").selectAll(".place-label")
-          .data(illustrator1)
-          .enter().append("text")
-          .attr("class", "place-label")
-          .attr("x", function(d) { return d.x; })
-          .attr("y", function(d) { return d.y; })
-       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
-           .attr("dy", ".35em")
-    //.text("ddddddddd");
-           .text(function(d) { return d.name; });
-
-
-  chart2.append("g")
-    .attr("class", "y axis axisLeft")
-    .attr("transform", "translate(0,0)")
-    .call(yAxisLeft)
-  .append("text")
-    .attr("x", 10)
-    .attr("y", 15)
-    .attr("dy", "-2em")
-    .style("text-anchor", "end")
-    .text("Deaths");
-
-    
-
-
-  
-  bars = chart2.selectAll(".bar").data(overall).enter();
-
-  bars.append("rect")
-      .attr("class", "bar1")
-      .attr("x", function(d) { return x1(d.age); })
-      .attr("width", x1.rangeBand()/2)
-      .attr("y", function(d) { return y0(d.male); })
-    .attr("height", function(d,i,j) { return h2 - y0(d.male); }); 
-
-  bars.append("rect")
-      .attr("class", "bar2")
-      .attr("x", function(d) { return x1(d.age) + x1.rangeBand()/2; })
-      .attr("width", x1.rangeBand() / 2)
-      .attr("y", function(d) { return y1(d.female); })
-    .attr("height", function(d,i,j) { return h2 - y1(d.female); }); 
-
-  
-
-
-   chart2.selectAll("text.bar")
-  .data(overall)
-.enter().append("text")
-			   .text(function(d) {
-			   		return d.female;
-			   })
-			   .attr("text-anchor", "middle")
-			   .attr("x", function(d, i) {
-			   		return x1(d.age) + x1.rangeBand()/1.35;
-			   		//return i * (w2 / overall.length) + (w2 / overall.length - 1) / 2;
-			   })
-			   .attr("y", function(d) {
-			   		//return h2 - (d * 4) + 14;
-			   		return y1(d.female)-2;
-			   })
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "11px")
-			   .attr("fill", "gray");
-
-			 chart2.selectAll("text.bar")
-  				.data(overall)
-				.enter().append("text")
-			   .text(function(d) {
-			   		return d.male;
-			   })
-			   .attr("text-anchor", "middle")
-			   .attr("x", function(d, i) {
-			   		return x1(d.age) + x1.rangeBand()/4;
-			   		//return i * (w2 / overall.length) + (w2 / overall.length - 1) / 2;
-			   })
-			   .attr("y", function(d) {
-			   		//return h2 - (d * 4) + 14;
-			   		return y0(d.male)-2;
-			   })
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", "11px")
-			   .attr("fill", "gray");
-
-});
-
-
-function type(d) {
-  d.male = +d.female;
-  return d;
-}
-
-		   })
-        .on("mouseover",function(d, i){
-
-          //d3.select("svg").append("g").selectAll("circle").remove();
-
-          d3.selectAll("circle").remove();
-
-          var l=0;
-
-              for (a=0; a<=i; a++){
-
-                 l= l+ sdata[a].death;
-
-
-
-          }
-
-          div.transition()    
-                .duration(0)    
-                .style("opacity", .9);    
-            div .html(formatTime(d.date)+ ": " + d.death + "<br/>" + "Total Deaths: "+l)  
-                .style("left", (d3.event.pageX) + "px")   
-                .style("top", (d3.event.pageY - 28) + "px"); 
-
-         
-
-          d3.csv("deaths.age.mf.txt", function(data) {
-                         
-                     
-     
-
-            var sdata1 = Array.apply(1,{length: l}).map(function(item,j=1){
-             j++;
-
-             return {x: data[j-1].deaths.split(/\s+/)[0]*30, y: data[j-1].deaths.split(/\s+/)[1]*30, age:data[j-1].deaths.split(/\s+/)[2], mf:data[j-1].deaths.split(/\s+/)[3] }
-          });
-
-
-                       
-
-            var color = ['#b2182b', '#ef8a62', '#fddbc7', '#d1e5f0', '#67a9cf', '#2166ac']
-
-      svgContainer.selectAll("circle")
-          .data(sdata1)
-          .enter().append('circle')
-          .attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return height-d.y; })
-          .attr("r", 5)
-          .style("fill", function(d) { return color[d.age]; })
-          .attr("stroke", "black")
-   		  .attr("stroke-width", "1px")
-
-
-          /*var update=svgContainer.selectAll("circle").data(sdata1)
-          var enter = update.enter().append('circle').attr("cx", function(d) { return d.x; })
-          .attr("cy", function(d) { return height-d.y; })
-          .attr("r", 5).style("fill", function(d) { return color(d.mf); })
-          var exit = update.exit()
-          exit.style('fill', 'red').remove()
-          update.merge(enter).call(pulse)*/
-
-
-	});
-
-   });
-       
-
+	x.domain(d3.extent(data, function(d) { return d.date; }));
+	y.domain([0, d3.max(data, function(d) { return d.deaths; })]);
+	
 	// Add the X Axis
 	chart1.append("g")
 		.attr("class", "x axis")
@@ -1193,10 +488,350 @@ function type(d) {
           .attr("y", -2)
 		.text("Deaths");
 
-  //pump
+	// Add the linechart path.
+	chart1.append("path")
+		.attr("class", "line")
+		.attr("d", linechartvalue(data))
+		.attr("stroke", "#fee090")
+   		.attr("stroke-width", "2px");
+
+  chart1.selectAll("dot")  
+        .data(data)     
+    .enter().append("ellipse")                 
+        .attr("cx", function(d) { return x(d.date); })     
+        .attr("cy", function(d) { return y(d.deaths); })
+        .attr("rx", 4) 
+        .attr("ry", 4)
+        .style("fill", "orange") 
+        .attr("stroke", 'orange')
+         
+               
+        .on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0);
+            })
+        .on("click",function(d, i){
+
+        	d3.selectAll("#pie1").remove();
+			d3.selectAll("#pie2").remove();
+				
+
+
+          var l=0;
+
+              for (a=0; a<=i; a++){
+
+                 l= l+ data[a].deaths;
+				 
+				}
+			
+          div.transition()    
+                .duration(0)   
+                .style("opacity", .9);    
+            div .html(formatTimeFunction(d.date)+ ": " + d.deaths + "<br/>" + "Total Deaths: "+l)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY - 28) + "px");
+
+         
+
+          d3.csv("deaths_age_sex.csv", function(data1) {
+                         
+                     
+			var newDatasexpie = data1.slice(0, l);
+			var newDataagepie = data1.slice(0, l);
+
+   			/*var l=0;
+
+              for (a=0; a<=i; a++){
+
+                 l= l+ data1[a].deaths;
+				}*/
+		  
+	var wpie = 600,                        //width
+    hpie = 300,                            //height
+    rpie = 130,                            //radius
+    color1 = d3.scale.ordinal().range(["4682b4", "c51b7d"]);  
+	//d3.csv("deaths_age_sex.csv", function(data) {
+    var noofmales=0;
+	var nooffemales=0;
+			
+			for (b=0;b<newDatasexpie.length;b++)
+   			{
+   				//console.log(typeof(sdata[b].age));
+   				var s=Number(newDatasexpie[b].age);
+   								
+
+   						if(newDatasexpie[b].gender==0)
+   						{
+   							noofmales+=1;
+   						}else{
+   							nooffemales+=1;
+   						}
+			}
+	
+	piedata = [{"label": "Male", "value":noofmales}, {"label":"Female", "value":nooffemales}];
+	var totalsex = noofmales+nooffemales;
+	
+    
+    var vis = d3.select("body")
+        .append("svg")              //create the SVG element inside the <body>
+        .attr("id","pie1")
+		//.data([data])                   //associate our data with the document
+            .attr("width", wpie)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+            .attr("height", hpie+240)
+			.append("g")                //make a group to hold our pie chart
+            .attr("transform", "translate(" + 350 + "," + rpie + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+			
+
+    var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+        .outerRadius(rpie)
+		.innerRadius(0);
+
+    var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+        .value(function(d) { return d.value; });    //we must tell it out to access the value of each element in our data array
+
+    
+	
+	var g = vis.selectAll(".arc")
+    .data(pie(piedata))
+  .enter().append("g")
+    .attr("class", "arc");
+	
+	g.append("path")
+	.attr("id","BySex")
+	.attr("d", arc)
+    .style("fill", function(d,i) { return color1(i); })
+	.on("mouseover",function(d, i){
+
+				div.transition()    
+                .duration(0)    
+                .style("opacity", .9);    
+				div.html("Deaths in this gender: "+d.value)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY -28) + "px")
+				.attr("width",20);
+	   })
+	.on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0);
+        });
+	
+	var keypie = [{name:"Distribution By Sex Overall",x:-60,y:155}]
+	
+    vis.append("g").selectAll(".place-label")
+          .data(keypie)
+          .enter().append("text")
+          .attr("class", "place-label")
+          .attr("x", function(d) { return d.x; })
+          .attr("y", function(d) { return d.y; })
+       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
+          .attr("dy", ".35em")
+		  .text(function(d) { return d.name; });
+
+        g.append("svg:text")     //add a label to each slice
+                .attr("id","BySexText")
+				.attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                //we have to make sure to set these before calling arc.centroid
+                d.innerRadius = 0;
+                d.outerRadius = rpie;
+                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+            })
+            .attr("text-anchor", "middle")                          //center the text on it's origin
+            //.text(function(d, i) { return piedata[i].label + " (" + ((piedata[i].value/totalsex)*100) + ")"; })
+			.text(function(d, i) { return piedata[i].label + " (" + Math.round(((piedata[i].value / totalsex) * 100), 2)+ "%"+")"; })
+        
+//});//end of Gender pie chart
+
+	var wpie = 600,                        //width
+    hpie = 300,                            //height
+    rpie = 130,                            //radius
+    color2 = d3.scale.ordinal().range(['#762a83', '#af8dc3', '#e7d4e8', '#d9f0d3', '#7fbf7b', '#1b7837']);  
+	//d3.csv("deaths_age_sex.csv", function(data) {
+    var age0to10=0;
+	var age11to20=0; var age21to40=0; var age41to60=0; var age61to80=0; var agegt80=0;
+			
+			for (b=0;b<newDataagepie.length;b++)
+   			{
+   				//console.log(typeof(sdata[b].age));
+   				var s=Number(newDataagepie[b].age);
+   								
+
+   						switch(s)
+   				{
+
+   					case 0:
+   						age0to10+=1;
+   						break;
+
+   					case 1:
+
+   						age11to20+=1;
+   						break;
+
+   					case 2:
+   						age21to40+=1;
+   						break;
+
+   					case 3:
+   						age41to60+=1;
+   						break;
+
+   					case 4:
+   						age61to80+=1;
+   						break;
+
+   					case 5:
+   						agegt80+=1;
+   						break;
+
+   					default:
+   					    console.log("error");
+   				}
+			}
+	
+	piedata2 = [{"label": "0-10", "value":age0to10}, {"label":"11-20", "value":age11to20}, {"label":"21-40", "value":age21to40},
+			   {"label":"41-60", "value":age41to60}, {"label":"61-80", "value":age61to80}, {"label":">80", "value":agegt80}];
+	
+	var totalage = age0to10+age11to20+age21to40+age41to60+age61to80+agegt80;
+	
+    
+    var vis = d3.select("body")
+        .append("svg")              //create the SVG element inside the <body>
+        .attr("id","pie2")
+		//.data([data])                   //associate our data with the document
+            .attr("width", wpie)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+            .attr("height", hpie+240)
+			.append("g")                //make a group to hold our pie chart
+            .attr("transform", "translate(" + 300 + "," + rpie + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+			
+
+    var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+        .outerRadius(rpie)
+		.innerRadius(0);
+
+    var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+        .value(function(d) { return d.value; })    //we must tell it out to access the value of each element in our data array
+		.sort(null);
+    
+	
+	var g = vis.selectAll(".arc")
+    .data(pie(piedata2))
+  .enter().append("g")
+    .attr("class", "arc");
+	
+	g.append("path")
+	.attr("id","ByAge")
+	.attr("d", arc)
+    .style("fill", function(d,i) { return color2(i); })
+	.on("mouseover",function(d, i){
+
+				div.transition()    
+                .duration(0)    
+                .style("opacity", .9);    
+				div.html("Deaths in this age group: "+d.value)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY -28) + "px")
+				.attr("width",20);
+	   })
+	.on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0);
+        });
+	
+	var keypie = [{name:"Distribution By Age Overall",x:-60,y:155}]
+	
+    vis.append("g").selectAll(".place-label")
+          .data(keypie)
+          .enter().append("text")
+          .attr("class", "place-label")
+          .attr("x", function(d) { return d.x; })
+          .attr("y", function(d) { return d.y; })
+       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
+          .attr("dy", ".35em")
+		  .text(function(d) { return d.name; });
+
+        g.append("svg:text")     //add a label to each slice
+                .attr("id","ByAgeText")
+				.attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                //we have to make sure to set these before calling arc.centroid
+                d.innerRadius = 0;
+                d.outerRadius = rpie;
+                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+            })
+            .attr("text-anchor", "middle")                          //center the text on it's origin
+            .append('svg:tspan')
+			.attr('x', 0)
+			.attr('dy', 0)
+			.text(function(d, i) { return piedata2[i].label; })
+			.append('svg:tspan')
+			.attr('x', 0)
+			.attr('dy', 10)
+			.text(function(d, i) { return "("+Math.round(((piedata2[i].value/totalage)*100),2)+"%"+")"; })
+			
+        
+});//end of Age pie chart
+   				
+function type(d) {
+  d.male = +d.female;
+  return d;
+}
+})//end of onclick function
+        
+		.on("mouseover",function(d, i){
+
+          //d3.select("svg").append("g").selectAll("circle").remove();
+
+          d3.selectAll("circle").remove();
+
+          var l=0;
+
+              for (a=0; a<=i; a++){
+
+                 l= l+ data[a].deaths;
+				 
+				}
+			
+          div.transition()    
+                .duration(0)   
+                .style("opacity", .9);    
+            div .html(formatTimeFunction(d.date)+ ": " + d.deaths + "<br/>" + "Total Deaths: "+l)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY - 28) + "px"); 
+
+         
+
+          d3.csv("deaths_age_sex.csv", function(data1) {
+                         
+                     
+			var newData = data1.slice(0, l);
+            var color = ['#762a83', '#af8dc3', '#e7d4e8', '#d9f0d3', '#7fbf7b', '#1b7837']
+
+		svgContainer.selectAll("circle")
+          .data(newData)
+          .enter().append('circle')
+          .attr("cx", function(d) { return d.x*30; })
+          .attr("cy", function(d) { return height-d.y*30; })
+          .attr("r", 4)
+          .style("fill", function(d) { return color[d.age]; })
+          //.attr("stroke", "black")
+   		  //.attr("stroke-width", "1px")
+
+
+          
+	});
+
+   });
+       
+
+	
+
+  //pump key
   chart1.append("rect")
-    .attr("x", 0)
-    .attr("y", 350)
+    .attr("x", -318)
+    .attr("y", 20)
     .attr("width", 10)
     .attr("height", 10)
     .style("fill", "black")
@@ -1205,48 +840,31 @@ function type(d) {
 
   
 
-  //workhouse
-  chart1.append("rect")
-    .attr("x", 0)
-    .attr("y", 370)
-    .attr("width", 10)
-    .attr("height", 10)
-    .style("fill", "#b8e186")
-    .style("stroke-width",0.8);
-
-  //brewery 
-  chart1.append("rect")
-    .attr("x", 0)
-    .attr("y", 390)
-    .attr("width", 10)
-    .attr("height", 10)
-    .style("fill", "#c2a5cf")
-    .style("stroke-width",0.8); 
-
-    var label = [{x:5,y:415,color:"grey"},{x:120,y:355,color:"steelblue"},{x:120,y:375,color:"orange"},
-                  {x:200,y:355,color:"#b2182b"},{x:200,y:375,color:"#ef8a62"},{x:200,y:395,color:"#fddbc7"},
-                  {x:200,y:415,color:"#d1e5f0"},{x:200,y:435,color:"#67a9cf"},{x:200,y:455,color:"#2166ac"},]
+    var label = [{x:-314,y:45,color:"red"},{x:-314,y:120,color:"steelblue"},{x:-314,y:140,color:"#c51b7d"},
+                  {x:-180,y:25,color:"#762a83"},{x:-180,y:45,color:"#af8dc3"},{x:-180,y:65,color:"#e7d4e8"},
+                  {x:-180,y:85,color:"#d9f0d3"},{x:-180,y:105,color:"#7fbf7b"},{x:-180,y:125,color:"#1b7837"},]
 
     chart1.selectAll("dot")  
         .data(label)     
     .enter().append("ellipse")                 
         .attr("cx", function(d) { return d.x; })     
-        .attr("cy", function(d) { return d.y; })
+        .attr("cy", function(d) { return d.y	; })
         .attr("rx", 5) 
         .attr("ry", 5)
         .style("fill", function(d) { return d.color; }) 
-        .style("stroke","black")
+        //.style("stroke","black")
         .style("stroke-width",1); 
 
-    var illustrator = [{name:'Pump',x:15,y:355},{name:'Work House',x:15,y:375},
-              {name:'Brewery',x:15,y:395},{name:'Deaths location',x:15,y:415},
-              {name:'Male',x:130,y:355},{name:'Female',x:130,y:375},
-              {name:'0-10',x:210,y:355},{name:'11-20',x:210,y:375},{name:'21-40',x:210,y:395},
-              {name:'41-60',x:210,y:415},{name:'61-80',x:210,y:435},{name:'>80',x:210,y:455}
-              ,{name:'Original Map:',x:0,y:330},{name:'Gender:',x:115,y:330},{name:'Age:',x:195,y:330},{name:'The Number of Deaths Per Day',x:70,y:280}]
+    var key = [{name:'Pump',x:-304,y:25},/*{name:'Work House',x:-304,y:45},
+              {name:'Brewery',x:-304,y:65},*/{name:'Deaths location',x:-304,y:45},
+              {name:'Male',x:-304,y:120},{name:'Female',x:-304,y:140},
+              {name:'0-10',x:-170,y:25},{name:'11-20',x:-170,y:45},{name:'21-40',x:-170,y:65},
+              {name:'41-60',x:-170,y:85},{name:'61-80',x:-170,y:105},{name:'>80',x:-170,y:125}
+              ,{name:'Map:',x:-320,y:5},{name:'Gender:',x:-320,y:100},{name:'Age:',x:-180,y:5},{name:'Timeline of Deaths',x:100,y:-50}]
+	
 
   chart1.selectAll(".place-label")
-          .data(illustrator)
+          .data(key)
           .enter().append("text")
           .attr("class", "place-label")
           .attr("x", function(d) { return d.x; })
@@ -1254,13 +872,279 @@ function type(d) {
        //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
            .attr("dy", ".35em")
     //.text("ddddddddd");
-           .text(function(d) { return d.name; });
+           .text(function(d) { return d.name; })
+		   //.style(function(d){if (d.name=='Timeline of Deaths') return {"font-weight","bold" });
+		   
+});
 
+
+
+//Draw pie charts for age and gender
+
+//function updateGenderPie(){
+//d3.select("#pie1").remove();
+
+var wpie = 350,                        //width
+    hpie = 300,                            //height
+    rpie = 130,                            //radius
+    color1 = d3.scale.ordinal().range(["4682b4", "c51b7d"]);  
+
+    	
+	d3.csv("deaths_age_sex.csv", function(data) {
+                    
+            var noofmales=0;
+			var nooffemales=0;
+			
+			for (b=0;b<data.length;b++)
+   			{
+   				//console.log(typeof(sdata[b].age));
+   				var s=Number(data[b].age);
+   								
+
+   						if(data[b].gender==0)
+   						{
+   							noofmales+=1;
+   						}else{
+   							nooffemales+=1;
+   						}
+			}
+	
+	piedata = [{"label": "Male", "value":noofmales}, {"label":"Female", "value":nooffemales}];
+	var totalsex = noofmales+nooffemales;
+	
+    
+    var vis = d3.select("body")
+        .append("svg")              //create the SVG element inside the <body>
+        .attr("id","pie1")
+		//.data([data])                   //associate our data with the document
+            .attr("width", wpie)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+            .attr("height", hpie+240)
+			.append("g")                //make a group to hold our pie chart
+            .attr("transform", "translate(" + 350 + "," + rpie + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+			
+
+    var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+        .outerRadius(rpie)
+		.innerRadius(0);
+
+    var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+        .value(function(d) { return d.value; });    //we must tell it out to access the value of each element in our data array
+
+    
+	
+	var g = vis.selectAll(".arc")
+    .data(pie(piedata))
+  .enter().append("g")
+    .attr("class", "arc");
+	
+	g.append("path")
+	.attr("id","BySex")
+	.attr("d", arc)
+    .style("fill", function(d,i) { return color1(i); })
+	.on("mouseover",function(d, i){
+
+				div.transition()    
+                .duration(0)    
+                .style("opacity", .9);    
+				div.html("Deaths in this gender: "+d.value)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY -28) + "px")
+				.attr("width",20);
+	   })
+	.on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0);
+        });
+	
+	var keypie = [{name:"Distribution By Sex Overall",x:-60,y:155}]
+	
+    vis.append("g").selectAll(".place-label")
+          .data(keypie)
+          .enter().append("text")
+          .attr("class", "place-label")
+          .attr("x", function(d) { return d.x; })
+          .attr("y", function(d) { return d.y; })
+       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
+          .attr("dy", ".35em")
+		  
+		  
+	  /*.on("click", function(){
+		// Determine if current line is visible
+		var active   = BySex.active ? false : true ,
+		  newOpacity = active ? 0 : 1;
+		// Hide or show the elements		
+		d3.selectAll("#BySex").style("opacity", newOpacity);
+		d3.selectAll("#BySexText").style("opacity", newOpacity);
+		// Update whether or not the elements are active
+		BySex.active = active;
+		
+	})*/
+           .text(function(d) { return d.name; });
+	
+	
+		
+
+        g.append("svg:text")     //add a label to each slice
+                .attr("id","BySexText")
+				.attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                //we have to make sure to set these before calling arc.centroid
+                d.innerRadius = 0;
+                d.outerRadius = rpie;
+                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+            })
+            .attr("text-anchor", "middle")                          //center the text on it's origin
+            //.text(function(d, i) { return piedata[i].label + " (" + ((piedata[i].value/totalsex)*100) + ")"; })
+			.text(function(d, i) { return piedata[i].label + " (" + Math.round(((piedata[i].value / totalsex) * 100), 2)+ "%"+")"; })
+			
+			
+			
+        
+});//end of Gender pie chart
+//}//end of gender pie chart function
+
+
+//function updateAgePie(){
+//d3.select("#pie2").remove();
+
+//Age pie
+var wpie = 600,                        //width
+    hpie = 300,                            //height
+    rpie = 130,                            //radius
+    color2 = d3.scale.ordinal().range(['#762a83', '#af8dc3', '#e7d4e8', '#d9f0d3', '#7fbf7b', '#1b7837']);   
+
+    	
+	d3.csv("deaths_age_sex.csv", function(data) {
+                    
+            var age0to10=0;
+			var age11to20=0; var age21to40=0; var age41to60=0; var age61to80=0; var agegt80=0;
+			
+			for (b=0;b<data.length;b++)
+   			{
+   				//console.log(typeof(sdata[b].age));
+   				var s=Number(data[b].age);
+   				switch(s)
+   				{
+
+   					case 0:
+   						age0to10+=1;
+   						break;
+
+   					case 1:
+
+   						age11to20+=1;
+   						break;
+
+   					case 2:
+   						age21to40+=1;
+   						break;
+
+   					case 3:
+   						age41to60+=1;
+   						break;
+
+   					case 4:
+   						age61to80+=1;
+   						break;
+
+   					case 5:
+   						agegt80+=1;
+   						break;
+
+   					default:
+   					    console.log("error");
+   				}
+
+   			}
+	
+	piedata = [{"label": "0-10", "value":age0to10}, {"label":"11-20", "value":age11to20}, {"label":"21-40", "value":age21to40},
+			   {"label":"41-60", "value":age41to60}, {"label":"61-80", "value":age61to80}, {"label":">80", "value":agegt80}];
+	
+	var totalage = age0to10+age11to20+age21to40+age41to60+age61to80+agegt80;
+    
+    var vis = d3.select("body")
+        .append("svg")              //create the SVG element inside the <body>
+        .attr("id","pie2")
+		//.data([data])                   //associate our data with the document
+            .attr("width", wpie)           //set the width and height of our visualization (these will be attributes of the <svg> tag
+            .attr("height", hpie+240)
+			.append("g")                //make a group to hold our pie chart
+            .attr("transform", "translate(" + 300 + "," + rpie + ")")    //move the center of the pie chart from 0, 0 to radius, radius
+			
+
+    var arc = d3.svg.arc()              //this will create <path> elements for us using arc data
+        .outerRadius(rpie)
+		.innerRadius(0);
+
+    var pie = d3.layout.pie()           //this will create arc data for us given a list of values
+        .value(function(d) { return d.value; })//we must tell it out to access the value of each element in our data array
+		.sort(null);    
+
+    
+	
+	var g = vis.selectAll(".arc")
+    .data(pie(piedata))
+  .enter().append("g")
+    .attr("class", "arc");
+	
+	g.append("path")
+	.attr("id","ByAge")
+	.attr("d", arc)
+    .style("fill", function(d,i) { return color2(i); })
+	.on("mouseover",function(d, i){
+
+				div.transition()    
+                .duration(0)    
+                .style("opacity", .9);    
+				 div.html("Deaths in this age group: " +d.value)  
+                .style("left", (d3.event.pageX) + "px")   
+                .style("top", (d3.event.pageY - 28) + "px")
+				.attr("width",20);
+	}	)
+	.on("mouseout", function(d) {   
+            div.transition()    
+                .duration(500)    
+                .style("opacity", 0);
+            });
 
 	
+	var keypie = [{name:"Distribution By Age Overall",x:-60,y:155}]
+	
+    vis.append("g").selectAll(".place-label")
+          .data(keypie)
+          .enter().append("text")
+          .attr("class", "place-label")
+          .attr("x", function(d) { return d.x; })
+          .attr("y", function(d) { return d.y; })
+       //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
+          .attr("dy", ".35em")
+		  .text(function(d) { return d.name; });
+	
+	
+		
+
+        g.append("svg:text")     //add a label to each slice
+                .attr("id","ByAgeText")
+				.attr("transform", function(d) {                    //set the label's origin to the center of the arc
+                //we have to make sure to set these before calling arc.centroid
+                d.innerRadius = 0;
+                d.outerRadius = rpie;
+                return "translate(" + arc.centroid(d) + ")";        //this gives us a pair of coordinates like [50, 50]
+            })
+            .attr("text-anchor", "middle")                          //center the text on it's origin
+            .append('svg:tspan')
+			.attr('x', 0)
+			.attr('dy', 0)
+			.text(function(d, i) { return piedata[i].label; })
+			.append('svg:tspan')
+			.attr('x', 0)
+			.attr('dy', 10)
+			.text(function(d, i) { return "("+Math.round(((piedata[i].value/totalage)*100),2)+"%"+")"; })
+			
+});//end of pie chart
+//}//end of pie chart function
 
 
-});
 </script>
 
 
