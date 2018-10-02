@@ -477,7 +477,11 @@ function updateAge(){
 	chart1.append("g")
 		.attr("class", "x axis")
 		.attr("transform", "translate(0," + h1 + ")")
-		.call(xAxis);
+		.call(xAxis)
+		.append("text")
+    .attr("x", 140)
+          .attr("y", 40)
+		.text("Date");
 
 	// Add the Y Axis
 	chart1.append("g")
@@ -485,7 +489,7 @@ function updateAge(){
 		.call(yAxis)
 		.append("text")
     .attr("x", -25)
-          .attr("y", -2)
+          .attr("y", -6)
 		.text("Deaths");
 
 	// Add the linechart path.
