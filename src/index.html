@@ -252,7 +252,7 @@ function zoomed() {
     );
 }
 
-function interpolateZoom (translate, scale) {
+/*function interpolateZoom (translate, scale) {
     var self = this;
     return d3.transition().duration(350).tween("zoom", function () {
         var iTranslate = d3.interpolate(zoom.translate(), translate),
@@ -294,14 +294,14 @@ function zoomClick() {
     interpolateZoom([view.x, view.y], view.k);
 }
 
-d3.selectAll('button').on('click', zoomClick);
+d3.selectAll('button').on('click', zoomClick);*/
 
  //name of main streets
 
  var street_name = [{name:'CEORCE STREET',x:120,y:222,rotate:72},{name:'BREWER STREET',x:355,y:390,rotate:-43},
               {name:'RECENT STREET',x:235,y:250,rotate:60},{name:'OXFORD STREET',x:298,y:79,rotate:-10},
               {name:'DEAN STREET',x:490,y:89,rotate:66},{name:'WORK',x:321.5,y:179,rotate:-23},
-              {name:'HOUSE',x:325,y:192,rotate:-23},{name:'BRE.',x:411,y:212,rotate:65}]
+              {name:'HOUSE',x:325,y:192,rotate:-23},{name:'BRE.',x:411,y:212,rotate:65},{name:'BROAD STREET',x:325,y:245,rotate:-27}]
 
  var workhouse = [{x:311,y:170,w:45,h:38,rotate:-25}]
 
