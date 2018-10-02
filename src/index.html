@@ -114,7 +114,7 @@ div.tooltip {
 	<input name="Video" 
            type="button" 
            value="Video" 
-           onclick="window.open('https://www.youtube.com/watch?v=Is4hAr7-vNk');"
+           onclick="window.open('https://youtu.be/HRjcxeZ5oHE');"
 		   class = "button-Vid"/>
 		   
 </div>
@@ -336,8 +336,6 @@ d3.selectAll('button').on('click', zoomClick);
 				
 	});
 
-
-
 //Draw pumps
 	d3.csv("pumps.csv", function(error,data) {
                 
@@ -392,6 +390,8 @@ d3.selectAll('button').on('click', zoomClick);
            .text(function(d) { return d.name; });
 
 	});
+
+
 
 	//Add deaths
 	d3.csv("deaths_age_sex.csv", function(data) {
