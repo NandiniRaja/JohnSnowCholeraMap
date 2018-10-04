@@ -121,12 +121,7 @@ div.tooltip {
 
 
 
-<!--<div id="zoom">
-	<button id="zoom_in" class = "button-bg">+</button>
-	<button id="zoom_out" class = "button-bg">-</button>
-</div>-->
-
-  
+ 
 <script type="text/javascript">
 
     var width  = 550;
@@ -144,11 +139,11 @@ div.tooltip {
     .scaleExtent([1, 10])
     .on("zoom", zoomed);*/
 
-	var drag = d3.behavior.drag()
+	/*var drag = d3.behavior.drag()
     .origin(function(d) { return d; })
     .on("dragstart", dragstarted)
     .on("drag", dragged)
-    .on("dragend", dragended);
+    .on("dragend", dragended);*/
 
   var	margin = {top: 30, right: 20, bottom: 30, left: 50},
 	w1 = 370 - margin.left - margin.right,
@@ -228,11 +223,11 @@ var yAxisRight = d3.svg.axis().scale(y1).ticks(4).orient("right");
 
 var container = svgContainer.append("g");
 
-function zoomed() {
+/*function zoomed() {
   container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
-}
+}*/
 
-function dragstarted(d) {
+/*function dragstarted(d) {
   d3.event.sourceEvent.stopPropagation();
   d3.select(this).classed("dragging", true);
 }
@@ -243,7 +238,7 @@ function dragged(d) {
 
 function dragended(d) {
   d3.select(this).classed("dragging", false);
-}
+}*/
 
 function zoomed() {
     svgContainer.attr("transform",
@@ -252,49 +247,6 @@ function zoomed() {
     );
 }
 
-/*function interpolateZoom (translate, scale) {
-    var self = this;
-    return d3.transition().duration(350).tween("zoom", function () {
-        var iTranslate = d3.interpolate(zoom.translate(), translate),
-            iScale = d3.interpolate(zoom.scale(), scale);
-        return function (t) {
-            zoom
-                .scale(iScale(t))
-                .translate(iTranslate(t));
-            zoomed();
-        };
-    });
-}
-
-function zoomClick() {
-    var clicked = d3.event.target,
-        direction = 1,
-        factor = 0.2,
-        target_zoom = 1,
-        center = [width / 2 + 200, height / 2-100],
-        extent = zoom.scaleExtent(),
-        translate = zoom.translate(),
-        translate0 = [],
-        l = [],
-        view = {x: translate[0], y: translate[1], k: zoom.scale()};
-
-    d3.event.preventDefault();
-    direction = (this.id === 'zoom_in') ? 1 : -1;
-    target_zoom = zoom.scale() * (1 + factor * direction);
-
-    if (target_zoom < extent[0] || target_zoom > extent[1]) { return false; }
-
-    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
-    view.k = target_zoom;
-    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
-
-    view.x += center[0] - l[0];
-    view.y += center[1] - l[1];
-
-    interpolateZoom([view.x, view.y], view.k);
-}
-
-d3.selectAll('button').on('click', zoomClick);*/
 
  //name of main streets
 
@@ -316,7 +268,8 @@ d3.selectAll('button').on('click', zoomClick);*/
 					
 				var lineFunction = d3.svg.line()
 				.x(function(d) { return d.x*30; })
-				.y(function(d) { return  height- d.y*30; })
+				.y(function(d) { return  height- d.y*30
+				; })
 				.interpolate("linear");
 				
 
@@ -876,8 +829,7 @@ function type(d) {
        //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
            .attr("dy", ".35em")
     //.text("ddddddddd");
-           .text(function(d) { return d.name; })
-		   //.style(function(d){if (d.name=='Timeline of Deaths') return {"font-weight","bold" });
+           .text(function(d) { return d.name; });
 		   
 });
 
@@ -971,7 +923,7 @@ var wpie = 350,                        //width
           .attr("y", function(d) { return d.y; })
        //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
           .attr("dy", ".35em")
-		  
+		  	  
 		  
 	  /*.on("click", function(){
 		// Determine if current line is visible
@@ -1123,7 +1075,7 @@ var wpie = 600,                        //width
        //.attr("transform", function(d) { return "translate(" + d.x+"," +d.y ")"; })
           .attr("dy", ".35em")
 		  .text(function(d) { return d.name; });
-	
+		 
 	
 		
 
